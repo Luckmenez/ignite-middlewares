@@ -10,10 +10,18 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { user } = request.headers;
+  const userExists = users.some( (user) => user.username === user);
+  
+  if(userExists){
+    return response.status(404).json({ message: 'User do not exists'})
+  }
+
+  return next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
+  next()
   // Complete aqui
 }
 
@@ -67,14 +75,16 @@ app.patch('/users/:id/pro', findUserById, (request, response) => {
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
   const { user } = request;
-
+  console.log(user)
   return response.json(user.todos);
 });
 
 app.post('/todos', checksExistsUserAccount, checksCreateTodosUserAvailability, (request, response) => {
   const { title, deadline } = request.body;
-  const { user } = request;
-
+  const { user } = request.headers;
+  
+  console.log(title, deadline, user);
+  
   const newTodo = {
     id: uuidv4(),
     title,
