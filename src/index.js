@@ -35,11 +35,46 @@ function checksCreateTodosUserAvailability(request, response, next) {
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const { id } = request.params;
+
+  const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+
+  const user = users.find((user) => user.username === username);
+
+  if(!user){
+    return response.status(404).json({message: 'User do not exists'});
+  }
+
+  const isUuid = regexExp.test(id);
+  
+  if(!isUuid){
+    return response.status(400).json({message: 'todo id is not an uuid'});
+  }
+
+  const actualTodo = user.todos.find((todo) => todo.id === id);
+
+  if(!actualTodo){
+    return response.status(400).json({message: 'this todo do not belongs to this user'});
+  }
+
+  request.user = user;
+  request.todo = actualTodo;
+
+  next()
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { username } = request.params;
+  const user = users.find( (user) => user.username === username);
+  
+  if(!user){
+    return response.status(404).json({ message: 'User do not exists'})
+  }
+
+  request.user = user;
+
+  return next();
 }
 
 app.post('/users', (request, response) => {
@@ -66,7 +101,6 @@ app.post('/users', (request, response) => {
 
 app.get('/users/:id', findUserById, (request, response) => {
   const { user } = request;
-
   return response.json(user);
 });
 
